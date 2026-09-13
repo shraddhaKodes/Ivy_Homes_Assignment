@@ -1,0 +1,10 @@
+additional_query.js
+
+# backend and frontend environment files
+backend/.env
+frontend/.env
+
+# dependency folders in both app folders
+backend/node_modules/
+frontend/node_modules/
+
