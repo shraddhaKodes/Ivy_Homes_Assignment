@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/useAuth.js";
-import { API_BASE_URL, checkHealth } from "../services/api.js";
+import { checkHealth } from "../services/api.js";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -9,7 +9,10 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const [health, setHealth] = useState({ status: "checking", message: "Checking backend..." });
+  const [health, setHealth] = useState({
+    status: "checking",
+    message: "Checking backend...",
+  });
 
   useEffect(() => {
     let active = true;
@@ -57,7 +60,9 @@ export default function Login() {
           <span className="brand-mark">IH</span>
           <div>
             <h1>Ivy Homes</h1>
-            <p>Sign in to view live listings, rentals, projects, and insights.</p>
+            <p>
+              Sign in to view live listings, rentals, projects, and insights.
+            </p>
           </div>
         </div>
 
@@ -65,7 +70,6 @@ export default function Login() {
           <span aria-hidden="true" />
           <div>
             <strong>{health.message}</strong>
-            <small>{API_BASE_URL}</small>
           </div>
         </div>
 
