@@ -2,6 +2,41 @@
   "users": {
     "7c524642b63b1a747df5976446dcb3ef1cc63c3a8a0ff1b92fc5ee8f5c0ad2e2": [
       {
+        "id": "R2000028",
+        "favourite_id": "R2000028",
+        "listing_id": "R2000028",
+        "saved_at": "2026-09-14T10:07:08.742Z",
+        "listing": {
+          "listing_id": "R2000028",
+          "listing_url": "https://www.100acres.com/rent/2000028",
+          "website": "100acres",
+          "city_id": 2,
+          "title": "3 BHK for rent in Miyapur",
+          "apartment_name": "Rohan Greens",
+          "locality": "nallagandla",
+          "property_type": "apartment",
+          "bedroom": 3,
+          "bathroom": 2,
+          "floor": 7,
+          "total_floors": 27,
+          "furnishing": "semi-furnished",
+          "facing_direction": "north-west",
+          "price": 38900,
+          "deposit": 194500,
+          "maintenance": 5000,
+          "carpet_area": 1092,
+          "super_builtup_area": 1533,
+          "latitude": 17.51446,
+          "longitude": 78.54595,
+          "posted_by": "agent",
+          "posted_by_name": "Pooja Menon",
+          "posted_by_contact": "+912008060792",
+          "description": "3 BHK, semi-furnished, in Rohan Greens, Nallagandla. Close to the metro.",
+          "posted_at": "2026-05-13T16:17:00Z",
+          "is_live": true
+        }
+      },
+      {
         "id": "MAG-2001953",
         "favourite_id": "MAG-2001953",
         "listing_id": "MAG-2001953",

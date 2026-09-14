@@ -1,37 +1,36 @@
-import crypto from 'node:crypto';
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import crypto from "node:crypto";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-import express from 'express';
+import express from "express";
 import {
   clearSessionCookie,
   getBearerToken,
   readSessionFromCookie,
-} from '../middleware/session.js';
+} from "../middleware/session.js";
 
 const router = express.Router();
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const storePath = path.join(__dirname, '..', 'data', 'saved-listings.json');
+const storePath = path.join(__dirname, "..", "data", "saved-listings.json");
 
-const ivyBaseUrl =
-  process.env.IVY_API_BASE_URL || 'https://solve.ivy.homes';
+const ivyBaseUrl = process.env.IVY_API_BASE_URL || "https://solve.ivy.homes";
 
 const ivyApiKey = process.env.IVY_API_KEY;
 
 function getListingId(listing = {}) {
-  return listing.id || listing.listing_id || listing._id || '';
+  return listing.id || listing.listing_id || listing._id || "";
 }
 
 function getUserKey(user = {}) {
   const identity = user.email || user.id || user.user_id || user.username;
-  if (!identity) return '';
+  if (!identity) return "";
 
   return crypto
-    .createHash('sha256')
+    .createHash("sha256")
     .update(String(identity).trim().toLowerCase())
-    .digest('hex');
+    .digest("hex");
 }
 
 function getSession(req, res) {
@@ -42,19 +41,14 @@ function getSession(req, res) {
     return null;
   }
 
-  if (Number(session.expires_at || 0) <= Date.now()) {
-    clearSessionCookie(res);
-    return null;
-  }
-
   return session;
 }
 
 async function readStore() {
   try {
-    return JSON.parse(await fs.readFile(storePath, 'utf8'));
+    return JSON.parse(await fs.readFile(storePath, "utf8"));
   } catch (error) {
-    if (error.code === 'ENOENT') {
+    if (error.code === "ENOENT") {
       return { users: {} };
     }
 
@@ -84,31 +78,31 @@ async function fetchListingSnapshot(req, listingId) {
   const response = await fetch(
     new URL(`/v1/listings/${encodeURIComponent(listingId)}`, ivyBaseUrl),
     {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'X-API-Key': ivyApiKey,
+        "X-API-Key": ivyApiKey,
         Authorization: bearerToken,
-        Accept: 'application/json',
+        Accept: "application/json",
       },
-    }
+    },
   );
 
   if (!response.ok) return null;
 
-  const contentType = response.headers.get('content-type') || '';
-  return contentType.includes('application/json') ? response.json() : null;
+  const contentType = response.headers.get("content-type") || "";
+  return contentType.includes("application/json") ? response.json() : null;
 }
 
-router.get('/', async (req, res, next) => {
+router.get("/", async (req, res, next) => {
   try {
     const session = getSession(req, res);
     if (!session) {
-      return res.status(401).json({ message: 'No active Ivy session' });
+      return res.status(401).json({ message: "No active Ivy session" });
     }
 
     const userKey = getUserKey(session.user);
     if (!userKey) {
-      return res.status(401).json({ message: 'Session has no user identity' });
+      return res.status(401).json({ message: "Session has no user identity" });
     }
 
     const store = await readStore();
@@ -118,16 +112,16 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-router.get('/ids', async (req, res, next) => {
+router.get("/ids", async (req, res, next) => {
   try {
     const session = getSession(req, res);
     if (!session) {
-      return res.status(401).json({ message: 'No active Ivy session' });
+      return res.status(401).json({ message: "No active Ivy session" });
     }
 
     const userKey = getUserKey(session.user);
     if (!userKey) {
-      return res.status(401).json({ message: 'Session has no user identity' });
+      return res.status(401).json({ message: "Session has no user identity" });
     }
 
     const store = await readStore();
@@ -139,27 +133,27 @@ router.get('/ids', async (req, res, next) => {
   }
 });
 
-router.post('/', async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   try {
     const session = getSession(req, res);
     if (!session) {
-      return res.status(401).json({ message: 'No active Ivy session' });
+      return res.status(401).json({ message: "No active Ivy session" });
     }
 
     const userKey = getUserKey(session.user);
     if (!userKey) {
-      return res.status(401).json({ message: 'Session has no user identity' });
+      return res.status(401).json({ message: "Session has no user identity" });
     }
 
-    const listingId = String(req.body?.listing_id || '').trim();
+    const listingId = String(req.body?.listing_id || "").trim();
     if (!listingId) {
-      return res.status(400).json({ message: 'listing_id is required' });
+      return res.status(400).json({ message: "listing_id is required" });
     }
 
     const store = await readStore();
     const savedList = getUserSavedList(store, userKey);
     const existing = savedList.find(
-      (item) => String(item.listing_id) === listingId
+      (item) => String(item.listing_id) === listingId,
     );
 
     if (existing) {
@@ -189,30 +183,30 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-router.delete('/:id', async (req, res, next) => {
+router.delete("/:id", async (req, res, next) => {
   try {
     const session = getSession(req, res);
     if (!session) {
-      return res.status(401).json({ message: 'No active Ivy session' });
+      return res.status(401).json({ message: "No active Ivy session" });
     }
 
     const userKey = getUserKey(session.user);
     if (!userKey) {
-      return res.status(401).json({ message: 'Session has no user identity' });
+      return res.status(401).json({ message: "Session has no user identity" });
     }
 
-    const favouriteId = String(req.params.id || '').trim();
+    const favouriteId = String(req.params.id || "").trim();
     const store = await readStore();
     const savedList = getUserSavedList(store, userKey);
     const nextList = savedList.filter(
       (item) =>
         String(item.id) !== favouriteId &&
         String(item.favourite_id) !== favouriteId &&
-        String(item.listing_id) !== favouriteId
+        String(item.listing_id) !== favouriteId,
     );
 
     if (nextList.length === savedList.length) {
-      return res.status(404).json({ message: 'Saved listing not found' });
+      return res.status(404).json({ message: "Saved listing not found" });
     }
 
     store.users[userKey] = nextList;

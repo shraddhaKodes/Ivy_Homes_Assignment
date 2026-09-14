@@ -1,5 +1,6 @@
 function resolveApiBaseUrl() {
-  const configured = import.meta.env.VITE_API_BASE_URL || "http://localhost:8787";
+  const configured =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8787";
   const url = new URL(configured);
   const pageHost = window.location.hostname;
 
@@ -61,6 +62,19 @@ async function parseResponse(response) {
   return response.text();
 }
 
+function handleUnauthorizedResponse(response) {
+  if (response.status === 401) {
+    clearSession();
+
+    if (
+      typeof window !== "undefined" &&
+      window.location.pathname !== "/login"
+    ) {
+      window.location.assign("/login");
+    }
+  }
+}
+
 function normalizeError(payload, fallback = "Request failed") {
   if (payload && typeof payload === "object") {
     if (payload.message) return payload.message;
@@ -75,12 +89,7 @@ function normalizeError(payload, fallback = "Request failed") {
 }
 
 export async function request(path, options = {}) {
-  const {
-    method = "GET",
-    body,
-    query = {},
-    headers = {},
-  } = options;
+  const { method = "GET", body, query = {}, headers = {} } = options;
 
   const hasJsonBody = body !== undefined && body !== null && method !== "GET";
   const reqHeaders = {
@@ -109,6 +118,10 @@ export async function request(path, options = {}) {
 
   const payload = await parseResponse(response);
 
+  if (response.status === 401) {
+    handleUnauthorizedResponse(response);
+  }
+
   if (!response.ok) {
     const message = normalizeError(payload, "Request failed");
     throw new Error(message);
@@ -128,26 +141,6 @@ export function logout() {
   return request("/api/auth/logout", {
     method: "POST",
   });
-}
-
-export async function restoreSession() {
-  const payload = await request("/api/auth/session", {
-    method: "GET",
-  });
-
-  if (payload?.session?.user) {
-    const normalized = {
-      ...payload.session,
-      expires_in: Number(payload.session.expires_in || 1800),
-      expires_at: payload.session.expires_at || Date.now() + 1800 * 1000,
-    };
-
-    setSession(normalized);
-    return normalized;
-  }
-
-  clearSession();
-  return null;
 }
 
 export function checkHealth() {
@@ -212,4 +205,48 @@ export function createPaginationPayload(page, limit = 50) {
     limit,
     offset: Number(page - 1) * limit,
   };
+}
+
+export async function restoreSession() {
+  const payload = await request("/api/auth/session", {
+    method: "GET",
+  });
+
+  if (payload?.session?.user) {
+    const normalized = {
+      ...payload.session,
+      expires_in: Number(payload.session.expires_in || 900),
+      expires_at:
+        payload.session.expires_at ||
+        Date.now() + Number(payload.session.expires_in || 900) * 1000,
+    };
+
+    setSession(normalized);
+    return normalized;
+  }
+
+  clearSession();
+  return null;
+}
+
+export async function refreshSession() {
+  const payload = await request("/api/auth/refresh", {
+    method: "POST",
+  });
+
+  if (payload?.session?.user) {
+    const normalized = {
+      ...payload.session,
+      expires_in: Number(payload.session.expires_in || 900),
+      expires_at:
+        payload.session.expires_at ||
+        Date.now() + Number(payload.session.expires_in || 900) * 1000,
+    };
+
+    setSession(normalized);
+    return normalized;
+  }
+
+  clearSession();
+  return null;
 }

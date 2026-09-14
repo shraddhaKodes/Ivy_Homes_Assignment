@@ -301,6 +301,13 @@ a {
   border-radius: 8px;
 }
 
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
 .filter-button,
 .primary-button,
 .pagination-loader button {

@@ -1,71 +1,75 @@
 {
-  "api_key": "IVY26-22279454EF0C",
-  "candidate": {
-    "name": "Shraddha Kumari",
-    "email": "shraddha.20235081@mnnit.ac.in",
-    "repo_url": "",
-    "demo_url": ""
-  },
-  "answers": {
-    "total_listing_records": 4400,
-    "unique_properties": 3984,
-    "active_listings": 3477,
-    "corrupt_listing_ids": [
-      "100-2000330",
-      "100-2000571",
-      "100-2001154",
-      "100-2002483",
-      "100-2002618",
-      "DWE-2001261",
-      "DWE-2002997",
-      "DWE-2003348",
-      "MAG-2000670",
-      "MAG-2002071",
-      "MAG-2002456",
-      "MAG-2002624",
-      "MAG-2002914",
-      "SQU-2001338",
-      "SQU-2001615",
-      "SQU-2001685",
-      "SQU-2001910",
-      "SQU-2002038",
-      "SQU-2002386",
-      "SQU-2002576",
-      "SQU-2003252",
-      "ZER-2001183",
-      "ZER-2001221",
-      "ZER-2001292",
-      "ZER-2001308",
-      "ZER-2001710",
-      "ZER-2001864",
-      "ZER-2001930",
-      "ZER-2002492",
-      "ZER-2002789"
-    ],
-    "total_monthly_rent": 5506600,
-    "avg_price_per_sqft_2bhk": 17914.95,
-    "costliest_project": {
-      "project_id": "P20165",
-      "price_max_inr": 99.8
-    },
-    "listings_last_7_days": 141,
-    "fake_listing_ids": [],
-    "projects_with_wrong_listing_count": 363
-  },
-  "findings": [
-    {
-      "endpoint": "/v1/listings",
-      "category": "pagination",
-      "documented": "API metadata reports total = 4110 and the documentation says the listing endpoint should stop at that metadata total.",
-      "actual": "Pagination continued beyond the metadata total and returned 4400 retrievable listing records; offset 4399 returned a valid listing and offset 4400 returned no results.",
-      "how_found": "The local fetchAll helper was inspected and rerun with offset increments of results.length until the returned result page became empty; specifically the run confirmed that offset 4399 returned one valid record and offset 4400 returned an empty page.",
-      "impact": "The extraction must not use data.total as a stopping condition; it must continue until the API returns an empty page or has_more is false, yielding 4400 actual listing records rather than the documented 4110 metadata total.",
-      "evidence": [
-        "metadata total = 4110",
-        "offset 4399 returned a valid listing",
-        "offset 4400 returned an empty result",
-        "4400 records were actually retrievable"
-      ]
-    }
-  ]
+"api_key": "IVY26-XXXXXXXXXXXX",
+"candidate": {
+"name": "Shraddha Kumari",
+"email": "shraddha.20235081@mnnit.ac.in",
+"repo_url": "https://github.com/shraddhaKodes/Ivy_Homes_Assignment",
+"demo_url": "https://ivy-homes-property-platform.netlify.app"
+},
+"answers": {
+"total_listing_records": 4400,
+"unique_properties": 4365,
+"active_listings": 3477,
+"corrupt_listing_ids": [
+"100-2000330",
+"100-2000571",
+"100-2001154",
+"100-2002483",
+"100-2002618",
+"DWE-2001261",
+"DWE-2002997",
+"DWE-2003348",
+"MAG-2000670",
+"MAG-2002071",
+"MAG-2002456",
+"MAG-2002624",
+"MAG-2002914",
+"SQU-2001338",
+"SQU-2001615",
+"SQU-2001685",
+"SQU-2001910",
+"SQU-2002038",
+"SQU-2002386",
+"SQU-2002576",
+"SQU-2003252",
+"ZER-2001183",
+"ZER-2001221",
+"ZER-2001292",
+"ZER-2001308",
+"ZER-2001710",
+"ZER-2001864",
+"ZER-2001930",
+"ZER-2002492",
+"ZER-2002789"
+],
+"total_monthly_rent": 5506600,
+"avg_price_per_sqft_2bhk": 17914.95,
+"costliest_project": {
+"project_id": "P20165",
+"price_max_inr": 998000000
+},
+"listings_last_7_days": 141,
+"fake_listing_ids": [],
+"projects_with_wrong_listing_count": 363
+},
+"findings": [
+{
+"endpoint": "/v1/listings",
+"category": "completeness",
+"documented": "The listings endpoint documentation reports a total of 4110 records.",
+"actual": "Fully paginating the endpoint without filters returned 4400 records; offset 4399 returned a record and offset 4400 returned an empty page.",
+"how_found": "Drained /v1/listings page by page until an empty page was returned, then compared the retrieved count with the documented total.",
+"impact": "Relying on the documented total would omit 290 retrievable listing records and produce incorrect downstream aggregate results.",
+"evidence": []
+},
+{
+"endpoint": "/v1/projects",
+"category": "consistency",
+"documented": "Projects contain a total_listings field representing the reported number of listings for each project.",
+"actual": "For 363 projects, total_listings differs from the actual number of retrievable /v1/listings records having the same project_id.",
+"how_found": "Grouped all 4400 retrievable listing records by project_id and compared those counts with the total_listings value for each project.",
+"impact": "The reported project-level listing counts cannot be assumed to match the retrievable listing records.",
+"evidence": []
+}
+]
 }

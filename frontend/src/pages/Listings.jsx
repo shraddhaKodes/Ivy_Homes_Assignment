@@ -23,7 +23,6 @@ export default function Listings() {
     hasMore: false,
   });
   const [filters, setFilters] = useState({
-    city_id: "",
     property_type: "",
     locality: "",
     bedrooms: "",

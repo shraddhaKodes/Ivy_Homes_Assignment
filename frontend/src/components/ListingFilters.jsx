@@ -7,25 +7,9 @@ export default function ListingFilters({
   return (
     <form className="listing-filters" onSubmit={onApply}>
       <div className="filter-group">
-        <label>City</label>
+        <label>Property Type</label>
         <select
-          value={filters.city_id}
-          onChange={(event) =>
-            onChange({ ...filters, city_id: event.target.value })
-          }
-          disabled={disabled}
-        >
-          <option value="">All Cities</option>
-          <option value="1">City 1</option>
-          <option value="2">City 2</option>
-          <option value="3">City 3</option>
-        </select>
-      </div>
-
-      <div className="filter-group">
-        <label>Type</label>
-        <select
-          value={filters.property_type}
+          value={filters.property_type || ""}
           onChange={(event) =>
             onChange({ ...filters, property_type: event.target.value })
           }
@@ -34,7 +18,8 @@ export default function ListingFilters({
           <option value="">All Types</option>
           <option value="apartment">Apartment</option>
           <option value="villa">Villa</option>
-          <option value="independent-house">Independent House</option>
+          <option value="independent house">Independent House</option>
+          <option value="builder floor">Builder Floor</option>
         </select>
       </div>
 
@@ -70,30 +55,38 @@ export default function ListingFilters({
       </div>
 
       <div className="filter-group">
-        <label>Min Price</label>
+        <label>Min Rent</label>
         <input
           type="number"
           min="0"
           step="1"
-          value={filters.min_price || ""}
+          value={filters.min_rent ?? filters.min_price ?? ""}
           placeholder="Min"
           onChange={(event) =>
-            onChange({ ...filters, min_price: event.target.value })
+            onChange({
+              ...filters,
+              min_rent: event.target.value,
+              min_price: event.target.value,
+            })
           }
           disabled={disabled}
         />
       </div>
 
       <div className="filter-group">
-        <label>Max Price</label>
+        <label>Max Rent</label>
         <input
           type="number"
           min="0"
           step="1"
-          value={filters.max_price || ""}
+          value={filters.max_rent ?? filters.max_price ?? ""}
           placeholder="Max"
           onChange={(event) =>
-            onChange({ ...filters, max_price: event.target.value })
+            onChange({
+              ...filters,
+              max_rent: event.target.value,
+              max_price: event.target.value,
+            })
           }
           disabled={disabled}
         />

@@ -1,5 +1,4 @@
 const SESSION_COOKIE = "ivy_session";
-const DEFAULT_EXPIRES_IN_SECONDS = 30 * 60;
 
 function parseCookies(req) {
   const cookies = {};
@@ -31,7 +30,8 @@ function getCookieOptions() {
 
   return {
     httpOnly: true,
-    sameSite: process.env.COOKIE_SAME_SITE || (isProduction ? "none" : "lax"),
+    sameSite:
+      process.env.COOKIE_SAME_SITE || (isProduction ? "none" : "lax"),
     secure:
       configuredSecure === undefined
         ? isProduction
@@ -51,22 +51,30 @@ export function readSessionFromCookie(req) {
   }
 }
 
-export function writeSessionCookie(res, session) {
-  const expiresIn = Number(session.expires_in || DEFAULT_EXPIRES_IN_SECONDS);
-  const expiresAt = Date.now() + expiresIn * 1000;
+export function writeSessionCookie(res, session, existingSession = null) {
+  const expiresIn = Number(session.expires_in || 900);
 
   const safeSession = {
     access_token: session.access_token,
-    refresh_token: session.refresh_token,
+    refresh_token:
+      session.refresh_token || existingSession?.refresh_token || null,
     token_type: session.token_type || "Bearer",
     expires_in: expiresIn,
-    expires_at: expiresAt,
-    user: session.user || null,
+    expires_at: Date.now() + expiresIn * 1000,
+    refresh_url:
+      session.refresh_url || existingSession?.refresh_url || "/auth/refresh",
+    user: session.user || existingSession?.user || null,
   };
+
+  // Cookie lifetime should cover the refresh token/session,
+  // not just the short-lived access token.
+  const cookieMaxAge =
+    Number(process.env.SESSION_COOKIE_MAX_AGE_MS) ||
+    24 * 60 * 60 * 1000;
 
   res.cookie(SESSION_COOKIE, JSON.stringify(safeSession), {
     ...getCookieOptions(),
-    maxAge: expiresIn * 1000,
+    maxAge: cookieMaxAge,
   });
 
   return safeSession;
@@ -92,6 +100,7 @@ export function getBearerToken(req) {
   if (header) return header;
 
   const session = readSessionFromCookie(req);
+
   if (!session?.access_token) return null;
 
   return `${session.token_type || "Bearer"} ${session.access_token}`;
